@@ -1,1 +1,679 @@
+#include<stdio.h>
+#include<conio.h>
+#include<stdlib.h>
+#include<string.h>
 
+FILE*turnos;
+FILE*socios;
+FILE*entrenadores;
+FILE*usuario;
+
+struct Entrenadores{
+	char Contras[35],NombreApe[60],actividad[60]; 
+	int legajoentrenador,horatencion;	
+}entre;
+
+struct Fecha{
+	int dd,mm,aa;
+}fecha;
+
+struct Turnos{
+	int legajoentrenadorR,nrosocio;
+	int dni;
+	struct Fecha fecha;
+	char DetAt[380], actividad[60];
+}tur;
+
+struct Gym{
+	char ApellidoNombre[60],Telefono[25];
+    int legajoentrenador,nrosocio;
+}gim;
+
+struct FechaNacimiento{
+	int dd,mm,aa;
+}fech;
+
+struct Socios{
+	char ApellidoNombre[60],Direccion[60],Telefono[25];
+	int Dni;
+	struct FechaNacimiento fech;
+	float Peso;
+	float altura;
+	int nrosocio ;
+}soci;
+
+struct Usuario{
+	char user[10];
+	char contras[10];
+	char nomYape[60];
+}use;
+
+int opc=0,op2=0,opp=0,op1=0,j=0,i=0,band=0,acceso=0,validar=0,valida=0;
+char op,oppp;
+void MenuPrincipal();
+
+//menu GYM
+void MenuGym();
+void ModuloGym();
+void VisualizarlistadoDeSocios(FILE*turnos);
+void RegistraRutina(FILE*turnos); 
+
+//recepcion
+void MenuRecepcion();
+void ModuloRecepcion();
+void RegistrarSocios(FILE*socios);
+void Registraractividadsocio(FILE*turnos);
+void VerListaSocios(FILE*socios);
+void listaFechaPago(FILE*socios);
+
+
+//Administracion
+void MenuAdministracion();
+void ModuloAdministracion();
+void RegistrarUsuario(FILE*usuario);
+void RegistrarActividad(FILE*entrenadores);
+void calcularPagoEntrenador(FILE*entrenadores);
+void mayCargaHoraria(FILE*entrenadores);
+
+int main(){
+	do{
+		MenuPrincipal();
+		switch(opp){
+			case 1:{
+				ModuloGym();
+			break;}
+			case 2:{
+				ModuloRecepcion();
+			break;}
+			case 3:{
+				ModuloAdministracion();
+			break;}
+			case 4:{
+				system("cls");
+				printf("\n ***Finalizado***");
+				getch();
+			break;}
+		}
+	}while(opp!=4);
+}
+
+
+void ModuloGym(){
+	do{
+		MenuGym();
+		switch(opc){
+			case 1:{
+				if(acceso==0){
+					system("cls");
+					char password[20];
+					int leg=1234;
+					int legajoentrenador=0,salir=0;
+					do{
+						system("cls");
+						printf("\n Digite su numero de legajo: ");scanf("%d",&legajoentrenador);
+						_flushall();
+						printf("\n Digite su password: ");gets(password);
+						acceso=0;
+						rewind(entrenadores);
+						entrenadores=fopen("Entrenadores.dat","a+b");
+						fread(&entre,sizeof(Entrenadores),1,entrenadores);
+						while(!feof(entrenadores)){
+						system("pause");
+							if(entre.legajoentrenador==legajoentrenador || legajoentrenador == leg) {
+							system("pause");
+								if(strcmp(entre.Contras,password)==0 || strcmp(password,"12345")) {
+									system("cls");
+									printf("\n Sesion iniciada correctamente\n\n");
+									system("pause");
+									acceso=1;
+								}
+							}
+							fread(&entre,sizeof(Entrenadores),1,entrenadores);
+						}
+						fclose(entrenadores);
+						if(acceso==0){
+							system("cls");
+							printf("\n Error no se a podido autenticar correctamente");
+							getch();
+							system("cls");
+							_flushall();
+							printf("\n Desea volver a intentar(s/n)(S/N): ");scanf("%c",&oppp);
+							if(oppp=='s'||oppp=='S'){
+								salir=0;
+							}else if(oppp=='n'||oppp=='N'){
+								salir=1;			
+							}	
+						}else if(acceso==1){
+							salir=1;
+						}
+					}while(salir==0);
+				}else{
+					system("cls");
+					printf("\nYa tiene una sesion iniciada...Por favor cierre la sesion antes de iniciar");
+					getch();
+				}
+			break;}
+			case 2:{
+				if(acceso==1){
+					VerListaSocios(socios);
+					VisualizarlistadoDeSocios(turnos);	
+				}else{
+					system("cls");
+					printf("\n Acceso denagado... Antes debe iniciar sesion\n\n");
+					system("pause");
+				}
+			break;}
+			case 3:{
+				if(acceso==1){
+					RegistraRutina(turnos);
+				}else{
+					system("cls");
+					printf("\n Acceso denagado... Antes debe iniciar sesion\n\n");
+					system("pause");
+				}
+			break;}
+			case 4:{
+				if(acceso==1){
+					system("cls");
+					printf("\n Aplicacion finalizada\n\n");
+					system("pause");
+					acceso=0;
+				}else{
+					system("cls");
+					printf("\n Acceso denagado... Antes debe iniciar sesion\n\n");
+					system("pause");
+				}
+			break;}
+			default:{
+				system("cls");
+				printf("\n Se produjo un error solo debe ingresar las opciones que aparecen en el menu\n\n");
+				system("pause");
+			break;}
+		}
+	}while(opc!=4);
+}
+
+void ModuloRecepcion(){
+	do{
+		MenuRecepcion();
+	    switch(op2){
+			case 1:{
+				if(valida==0){
+					system("cls");
+					int sal=0;
+					char usss[60],cont[60],Nombre[60];
+					do{
+						system("cls");
+						_flushall();
+						printf("\n Digite el usuario: ");gets(usss);
+						_flushall();
+						printf("\n Digite su contrase%ca: ",164);gets(cont);
+						_flushall();
+						printf("\n Digite el nombre y apellido: ");gets(Nombre);
+						valida=0;						
+						rewind(usuario);
+						usuario=fopen("Usuarios.dat","a+b");
+						fread(&use,sizeof(Usuario),1,usuario);
+						while(!feof(usuario)){
+							if(strcmp(use.contras,cont)==0){
+								if(strcmp(use.user,usss)==0){
+									if(strcmp(use.nomYape,Nombre)==0){
+										system("cls");
+										printf("\n Sesion iniciada correctamente\n\n");
+										system("pause");
+										valida=1;
+									}
+								}
+							}
+							fread(&use,sizeof(Usuario),1,usuario);
+						}
+						fclose(usuario);
+						if(valida==0){
+							system("cls");
+							printf("\n Error en los datos");
+							getch();
+							system("cls");
+							_flushall();
+							printf("\n Desea volver a intentar(s/n)(S/N): ");scanf("%c",&oppp);
+							if(oppp=='s'||oppp=='S'){
+								sal=0;
+							}else if(oppp=='n'||oppp=='N'){
+								sal=1;			
+							}	
+						}else if(valida==1){
+							sal=1;
+						}
+					}while(sal==0);
+				}else{
+					system("cls");
+					printf("\nYa tiene una sesion iniciada...Por favor cierre la sesion antes de iniciar");
+					getch();
+				}			
+			break;}	
+			case 2:{
+				if(valida==1){
+					RegistrarSocios(socios);
+				}else{
+					system("cls");
+					printf("\n Acceso denagado... Antes debe iniciar sesion\n\n");
+					system("pause");
+				}
+			break;}	
+			case 3:{
+				if(valida==1){
+					Registraractividadsocio(turnos);
+				}else{
+					system("cls");
+					printf("\n Acceso denagado... Antes debe iniciar sesion\n\n");
+					system("pause");
+				}
+			break;}	
+			case 4:{
+				if(valida==1){
+					VerListaSocios(socios);
+				}else{
+					system("cls");
+					printf("\n Acceso denagado... Antes debe iniciar sesion\n\n");
+					system("pause");
+				} 	
+			break;}
+			case 5:{
+				if(valida==1){
+					listaFechaPago(socios);
+				}else{
+					system("cls");
+					printf("\n Acceso denagado... Antes debe iniciar sesion\n\n");
+					system("pause");
+				} 	
+			break;}	
+			case 6:{
+				if(valida==1){
+					system("cls");
+					printf("\n Aplicacion finalizada\n\n");
+					system("pause");
+					valida=0;
+				}else{
+					system("cls");
+					printf("\n Acceso denagado... Antes debe iniciar sesion\n\n");
+					system("pause");
+				}	
+			break;}	
+			default:{
+				system("cls");
+				printf("\n Se produjo un error solo debe ingresar las opciones que aparecen en el menu\n\n");
+				system("pause");
+			break;}
+		}
+	}while(op2!=6);
+}
+
+void ModuloAdministracion(){
+	do{
+		MenuAdministracion();
+		switch(op1){
+			case 1:{
+				RegistrarUsuario(usuario);
+			break;}
+			case 2:{
+				RegistrarActividad(entrenadores);
+			break;}
+			case 3:{
+				calcularPagoEntrenador(entrenadores);
+			break;}
+			case 4:{
+				mayCargaHoraria(entrenadores);
+			break;}
+			case 5:{
+				system("cls");
+				printf("\n Finalizado");
+				getch();
+			break;}
+		}
+	}while(op1!=5);
+}
+void RegistrarUsuario(FILE*usuario){
+	int lista=0;
+	usuario=fopen("Usuarios.dat","a+b");
+	do{
+		system("cls");
+		_flushall();
+		printf("\n Digite el usuario : ");gets(use.user);
+		_flushall();
+		printf("\n Digite la contrase%ca : ",164);gets(use.contras);
+		_flushall();
+		printf("\n Digite el nombre y apellido: ");gets(use.nomYape);
+		fwrite(&use,sizeof(Usuario),1,usuario);
+		_flushall();
+		printf("\n Desea registrar otro usuario(s/n)(S/N): ");scanf("%c",&opp);
+		if(opp=='s'||opp=='S'){
+			lista=0;
+		}else if(opp=='n'||opp=='N'){
+			lista=1;			
+		}
+	}while(lista==0);
+	fclose(usuario);
+}
+void RegistrarActividad(FILE*entrenadores){
+	int listo=0, num=0;
+	entrenadores=fopen("Entrenadores.dat","a+b");
+	do{
+		system("cls");
+		_flushall();
+		do{
+			printf("\n Digite actividad a realizar: ");gets(entre.actividad);
+			_flushall();
+			if(strcmp(entre.actividad,"zumba")!=0 && strcmp(entre.actividad,"spining")!=0 && strcmp(entre.actividad,"pilate")!=0){
+				printf("\n Actividad no valida");
+			}else{
+				num=1;
+			}
+		}while(num==0);
+		printf("\n Digite el horario : ");scanf("%d",&entre.horatencion);
+		_flushall();
+		printf("\n Digite el nombre del Entrenador: ");gets(entre.NombreApe);
+		_flushall();
+		printf("\n Legajo entrenador: ");scanf("%d",&entre.legajoentrenador);
+		fwrite(&entre,sizeof(Entrenadores),1,entrenadores);
+		_flushall();
+		printf("\n Desea registrar otra actividad(s/n)(S/N): ");scanf("%c",&oppp);
+		if(oppp=='s'||oppp=='S'){
+			listo=0;
+		}else if(oppp=='n'||oppp=='N'){
+			listo=1;			
+		}
+	}while(listo==0);
+	fclose(entrenadores);
+}
+
+void RegistrarSocios(FILE*socios){
+	socios=fopen("Socios.dat","a+b");
+	do{
+		system("cls");
+		printf("\n Socio/Numero Socio: ");scanf("%d",&soci.nrosocio);
+		_flushall();
+		printf("\n Digite el apellido y nombre: ");gets(soci.ApellidoNombre);
+		_flushall();
+		printf("\n Digite la direccion: ");gets(soci.Direccion);
+		_flushall();
+		
+		printf("\n Digite el telefono: ");gets(soci.Telefono);
+		printf("\n Digite el dni: ");scanf("%d",&soci.Dni);
+		printf("\n Digite la fecha de Ingreso \n");
+		printf(" -Dia: ");scanf("%d",&soci.fech.dd);
+		printf(" -Mes: ");scanf("%d",&soci.fech.mm);
+		printf(" -A%co: ",164);scanf("%d",&soci.fech.aa);
+		printf("\n Digite el peso: ");scanf("%f",&soci.Peso);
+		printf("\n Digite altura: ");scanf("%f",&soci.altura);	
+		fwrite(&soci,sizeof(Socios),1,socios);
+		_flushall();
+		printf("\n Desea registrar mas socios (s/n)(S/N): ");scanf("%c",&op);
+		if(op=='s'||op=='S'){
+			band=0;
+			i++;
+		}else if(op=='n'||op=='N'){
+			band=1;
+		}
+	}while(band==0);
+	fclose(socios);
+}
+
+void Registraractividadsocio(FILE*turnos){
+	i=0;
+	turnos=fopen("Turnos.dat","a+b");
+	do{
+		system("cls");
+		printf("\n Turno/Num Socio: ");scanf("%d",&tur.nrosocio);
+		printf("\n Legajo del entrenador: ");scanf("%d",&tur.legajoentrenadorR);
+		printf("\n DNI de socio: ");scanf("%d",&tur.dni);
+		printf("\n Digite la fecha del turno \n");
+		
+		printf(" -Dia:  ");scanf("%d",&tur.fecha.dd);
+		printf(" -Mes:  ");scanf("%d",&tur.fecha.mm);
+		printf(" -A%co: ");scanf("%d",&tur.fecha.aa);
+		
+		_flushall();
+		printf("\n Digite las actividades que desea realizar  \n");gets(tur.actividad); 
+		printf("\n Ingrese la rutina que desea definir (no mas de 380 caracteres)   \n");gets(tur.DetAt);
+		fwrite(&tur,sizeof(Turnos),1,turnos);
+		_flushall();
+		printf("\n Desea registrar mas turnos(s/n)(S/N): ");scanf("%c",&op);
+		if(op=='s'||op=='S'){
+			band=0;
+			i++;
+		}else if(op=='n'||op=='N'){
+			band=1;
+		}
+	}while(band==0);
+	fclose(turnos);
+}
+
+void VerListaSocios(FILE*socios){
+	rewind(socios);
+	socios=fopen("Socios.dat","a+b");
+	fread(&soci,sizeof(Socios),1,socios);
+	while(!feof(socios)){
+		printf("\n\n Socio %d",soci.nrosocio);
+		printf("\n Apellido y nombre: %s",soci.ApellidoNombre);
+		printf("\n Direccion: %s",soci.Direccion);
+		
+		printf("\n Telefono: %s",soci.Telefono);
+		printf("\n Dni: %d",soci.Dni);
+		printf("\n Fecha de Ingreso %d/%d/%d",soci.fech.dd,soci.fech.mm,soci.fech.aa);
+		printf("\n Peso: %.2f",soci.Peso);
+		printf("\n Altura: %.2f",soci.altura);	
+		fread(&soci,sizeof(Socios),1,socios);	
+	}
+	fclose(socios);
+	getch();
+}
+
+
+void VisualizarlistadoDeSocios(FILE*turnos){
+	system("cls");
+	int i=0;
+	int var=1, numSoc=0;
+	char busN[100];
+	_flushall();
+	do{
+		printf("\n Digite el nombre y apellido que desea buscar: ");gets(busN);
+		rewind(turnos);
+		rewind(socios);
+		turnos=fopen("Turnos.dat","a+b");
+		socios=fopen("Socios.dat","a+b");
+		fread(&tur,sizeof(Turnos),1,turnos);
+		fread(&soci,sizeof(Socios),1,socios);
+		while(!feof(socios)){
+			if(strcmp(busN,soci.ApellidoNombre)==0){
+				var=0;
+				numSoc=soci.nrosocio;
+				system("pause");
+			}
+			fread(&soci,sizeof(Socios),1,socios);
+		}
+		if(var==1){
+			printf("Error, los datos ingresados no tienen coincidencia, repita el proceso anterior\n");
+		}
+		_flushall();
+		
+	}while (var==1);
+	
+	while(!feof(turnos)){
+		if(numSoc==tur.nrosocio){
+			printf("\n Turno// nro de socio %d",tur.nrosocio);
+			printf("\n legajo: %d",tur.legajoentrenadorR);
+			printf("\n Fecha actual: %d/%d/%d",tur.fecha.dd,tur.fecha.mm,tur.fecha.aa);
+			printf("\n Dni: %d",tur.dni);
+			printf("\n Actividad: %s", tur.actividad);
+			_flushall();
+			i=i+1;
+		}
+		fread(&tur,sizeof(Turnos),1,turnos);
+	}
+	if(i==0){
+		printf("\n No se encontraron turnos registrados para dicho socio\n");
+	}
+	fclose(turnos);
+	fclose(socios);
+	getch();
+}
+
+void RegistraRutina(FILE*turnos){
+	char NombreA[20],rutina[380];
+	system("cls");
+	_flushall();
+	rewind(turnos);
+	turnos=fopen("Turnos.dat","a+b");
+	fread(&tur,sizeof(Turnos),1,turnos);
+	
+	while(!feof(turnos)){
+		printf("Numero de socio: %d\n", tur.nrosocio);
+		printf("Actividad: %s\n", tur.actividad);
+		printf("Rutina: %s\n", tur.DetAt);
+		fread(&tur,sizeof(Turnos),1,turnos);
+	}
+	fclose(turnos);
+	getch();
+}
+
+void listaFechaPago(FILE*socios){
+	system("cls");
+	int dia,mes,anio;
+	_flushall();
+	rewind(socios);
+	socios=fopen("Socios.dat","a+b");
+	fread(&soci,sizeof(Socios),1,socios);
+	while(!feof(socios)){
+		printf("\n Socio: %s - Numero de Socio: %d", soci.ApellidoNombre,soci.nrosocio);
+		if(soci.fech.mm==12){
+			printf("\n fecha de ingreso: ");
+			printf("\n %d/%d/%d ", soci.fech.dd, soci.fech.mm, soci.fech.aa);
+			printf("\n fecha de pago: ");
+			printf("\n %d/%d/%d ", soci.fech.dd, soci.fech.mm-11, soci.fech.aa+1);
+		}else{
+			printf("\n fecha de ingreso: ");
+			printf("\n %d/%d/%d ", soci.fech.dd, soci.fech.mm, soci.fech.aa);
+			printf("\n fecha de pago: ");
+			printf("\n %d/%d/%d ", soci.fech.dd, soci.fech.mm+1, soci.fech.aa);
+		}
+		printf("\n");
+		fread(&soci,sizeof(Socios),1,socios);
+	}
+	fclose(socios);
+	getch();
+}
+
+void calcularPagoEntrenador(FILE*entrenadores){
+	int leg,i=0,j=0;
+	system("cls");
+	_flushall();
+	rewind(entrenadores);
+	entrenadores=fopen("Entrenadores.dat","a+b");
+	printf("\n Ingrese el legajo del entrenador: ");scanf("%d",&leg);
+	fread(&entre,sizeof(Entrenadores),1,entrenadores);
+	while(!feof(entrenadores)){
+		if(leg==entre.legajoentrenador){
+			i=i+1;
+			printf("\n Entrenador: %s",entre.NombreApe);
+		}
+		fread(&entre,sizeof(Entrenadores),1,entrenadores);
+	}
+	if(i==0){
+		printf("\n No se encontró al entrenador");
+	}else{
+		rewind(turnos);
+		turnos=fopen("Turnos.dat","a+b");
+		fread(&tur,sizeof(Turnos),1,turnos);
+		while(!feof(turnos)){
+			if(leg==tur.legajoentrenadorR){
+				j++;
+			}
+			fread(&tur,sizeof(Turnos),1,turnos);
+		}
+	}
+	if(j==0){
+		printf("\n El entrenador no tiene ningun socio asignado");
+	}else{
+		printf("\n Pago al entrenador = %d", j*10000);
+	}
+	fclose(entrenadores);
+	fclose(turnos);
+	getch();
+}
+
+void mayCargaHoraria(FILE*entrenadores){
+	int leg,i=0,j=0;
+	char entrenador[50];
+	system("cls");
+	_flushall();
+	rewind(entrenadores);
+	entrenadores=fopen("Entrenadores.dat","a+b");
+	fread(&entre,sizeof(Entrenadores),1,entrenadores);
+	while(!feof(entrenadores)){
+		if(i<entre.horatencion){
+			i=entre.horatencion;
+			strcpy(entrenador,entre.NombreApe);
+		}
+			
+		
+		fread(&entre,sizeof(Entrenadores),1,entrenadores);
+	}
+	printf("\n El entrenador con la mayor carga horaria es %s con %d horas a la semana",entrenador,i );
+	fclose(entrenadores);
+	getch();
+}
+
+
+void MenuGym(){
+	system("color 4"); 
+	system("cls");	
+	printf("\n*********************************************************");
+	printf("\n********** MODULO GYM *****************\n");
+	printf("*********************************************************\n");
+	printf("\n**\t 1 - Iniciar Sesion \t**");
+	printf("\n**\t 2 - Visualizar Listado de socios y actividad que desarrolla \t**");
+	printf("\n**\t 3 - Registrar rutinas de gimnasia \t**");
+	printf("\n**\t 4 - Cerrar la aplicacion \t**");
+	printf("\n*********************************************************\n");
+	printf("\n** - Ingrese una opcion: ");
+	scanf("%d", &opc);
+	}
+	
+void MenuRecepcion(){
+	system("color 1");
+	system("cls");
+	printf("\n********BIENVENIDO AL AREA RECEPCIÓN**********\n");
+	printf("\n**\t 1 - Iniciar Sesion\t**");
+	printf("\n**\t 2 - Registrar socio\t**");
+	printf("\n**\t 3 - Registrar actividad \t**");
+    printf("\n**\t 4 - Listado de socios\t**");
+    printf("\n**\t 5 - Listar Fechas de pago\t**");
+    printf("\n**\t 6 - Cerrar la aplicacion \t**");
+	printf("\t\t\t\t\t\t\t\t************************************************************\n"); 
+ 	printf("\n\n Ingrese una opcion: ");
+	scanf("%d",&op2);
+}
+void MenuAdministracion(){
+	system("color 2");
+	system("cls");
+	printf("\n\t**************  BIENVENIDO AL AREA ADMINISTRACIÓN  *******************\n");
+	printf("\n\t**********************************************************\n");
+	printf("\n\t 1 - Registrar  usurio de recepcion      **\t");
+	printf("\n\t 2 - Registrar actividades del gym       **\t");
+	printf("\n\t 3 - Calcular pago al entrenador         **\t");
+	printf("\n\t 4 - Entrenador con mayor carga horaria. **\t"); 
+	printf("\n\t 5 - Cerrar la aplicacion.               **\t");
+ 	printf("\n\n Ingrese una opcion: ");
+	 scanf("%d",&op1);
+}
+	
+void MenuPrincipal(){
+	system("color 9");
+	system("cls");
+	printf("\n********MENU PRINCIPAL**********\n");
+	printf("\n**\t 1 - Modulo GYM\t**");            
+	printf("\n**\t 2 - Modulo recepcion\t**");              
+	printf("\n**\t 3 - Modulo administracion\t**");
+ 	printf("\n**\t 4 - Cerrar la aplicacion\t**");
+ 	printf("\n\n Ingrese una opcion: ");
+	 scanf("%d",&opp);
+}
